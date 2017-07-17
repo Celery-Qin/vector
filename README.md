@@ -1,2 +1,0 @@
-# vector
-learning in Udacity
