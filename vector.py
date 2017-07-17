@@ -118,15 +118,10 @@ class Vector(object):
     # def angel_of_two_vectors(self, v):
     # return math.acos(self.dot_product(v) / self.magnitude() / v.magnitude())
     def parallelism(self, v):
-        
-        if sum([x==0 for x in v.coordinates])==True:
+        if self.magnitude() == 0 or v.magnitude() == 0:
             return True
         else:
-            divide = self.coordinates[0]/v.coordinates[0]
-            if self.scalar_multiply(divide[0]).coordinates == self.coordinates:
-                return True
-            else:
-                return False
+            return self.angel_of_two_vectors(v) == 0 or self.angel_of_two_vectors(v) == math.pi
 
     def orthogonality(self, v):
         if self.dot_product(v) == 0:
@@ -184,10 +179,16 @@ my_vector41 = Vector([2.118, 4.827])
 my_vector42 = Vector([0, 0])
 
 print my_vector11.parallelism(my_vector12)
+print my_vector11.angel_of_two_vectors(my_vector12)
+print math.pi
+print my_vector11.normalization().dot_product(my_vector12.normalization())
 print my_vector11.orthogonality(my_vector12)
+
 print my_vector21.parallelism(my_vector22)
 print my_vector21.orthogonality(my_vector22)
+
 print my_vector31.parallelism(my_vector32)
 print my_vector31.orthogonality(my_vector32)
+
 print my_vector41.parallelism(my_vector42)
 print my_vector41.orthogonality(my_vector42)
