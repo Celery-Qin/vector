@@ -3,7 +3,7 @@
 import math
 from decimal import Decimal, getcontext
 
-getcontext().prec = 8
+getcontext().prec = 15
 
 
 class Vector(object):
@@ -53,7 +53,7 @@ class Vector(object):
     def normalization(self):  # make a unit vector
         try:
             magnitude = self.magnitude()
-            return self.scalar_multiply(Decimal(1) / magnitude)
+            return self.scalar_multiply(Decimal(1.0) / magnitude)
         except ZeroDivisionError:
             raise Exception(self.CANNOT_NORMALIZE_ZERO_VECTOR_MSG)
 
@@ -79,91 +79,14 @@ class Vector(object):
                 raise e
 
 # my own code
+    def parallelism(self, v, tolerance=1e-10):
+        return (self.magnitude() < tolerance or
+                v.magnitude() < tolerance or
+                self.angel_of_two_vectors(v) == 0 or
+                self.angel_of_two_vectors(v) == math.pi)
 
-# def plus(v1, v2):
-#     result = []
-#     for i in range(v1.dimension):
-#         result.append(v1.coordinates[i] + v2.coordinates[i])
-#         i += 1
-#     return result
-
-
-# def minus(v1, v2):
-#     result = []
-#     for i in range(v1.dimension):
-#         result.append(v1.coordinates[i] - v2.coordinates[i])
-#         i += 1
-#     return result
-
-
-# def scalar_multiply(v1, n):
-#     result = []
-#     for i in range(v1.dimension):
-#         result.append(v1.coordinates[i] * n)
-#         i += 1
-#     return result
-    # def magnitude(self):
-    #     result = 0
-    #     for i in self.coordinates:
-    #         result += i * i
-    #     result = math.sqrt(result)
-    #     return result
-
-    # def direction(self):
-    #     new_coordinates = [(1/self.magnitude()) * x for x in self.coordinates]
-    #     return Vector(new_coordinates)
-    # def dot_product(self, v):
-    #     return sum(x * y for (x, y) in zip(self.coordinates, v.coordinates))
-
-    # def angel_of_two_vectors(self, v):
-    # return math.acos(self.dot_product(v) / self.magnitude() / v.magnitude())
-    def parallelism(self, v):
-        if self.magnitude() == 0 or v.magnitude() == 0:
-            return True
-        else:
-            return self.angel_of_two_vectors(v) == 0 or self.angel_of_two_vectors(v) == math.pi
-
-    def orthogonality(self, v):
-        if self.dot_product(v) == 0:
-            return True
-        else:
-            return False
-
-
-# test for plus,minus,scalar_multiply,__str__(),__eq__()
-# my_vector1 = Vector([8.218, -9.341])
-# my_vector2 = Vector([-1.129, 2.111])
-# my_vector3 = Vector([7.119, 8.215])
-# my_vector4 = Vector([-8.223, 0.878])
-# my_vector5 = Vector([1.671, -1.012, -0.318])
-# scalar = 7.41
-# # print my_vector1.__str__()
-# # print my_vector1.__eq__(my_vector2)
-
-# print my_vector1.plus(my_vector2)
-# print my_vector3.minus(my_vector4)
-# print my_vector5.scalar_multiply(scalar)
-
-
-# # test for magnitude and direction
-
-# test for inner products(dot) & angel
-# my_vector11 = Vector([7.887, 4.138])
-# my_vector12 = Vector([-8.802, 6.776])
-# my_vector21 = Vector([-5.955, -4.904, -1.874])
-# my_vector22 = Vector([-4.496, -8.755, 7.103])
-# my_vector31 = Vector([3.183, -7.627])
-# my_vector32 = Vector([-2.668, 5.319])
-# my_vector41 = Vector([7.35, 0.221, 5.188])
-# my_vector42 = Vector([2.751, 8.259, 3.985])
-
-# print my_vector11.dot_product(my_vector12)
-# print my_vector21.dot_product(my_vector22)
-# print my_vector11.magnitude()
-# print my_vector11.normalization()
-# print my_vector31.angel_of_two_vectors(my_vector32)
-# print my_vector41.angel_of_two_vectors(my_vector42, in_degrees=True)
-# print math.pi
+    def orthogonality(self, v, tolerance=1e-10):
+        return abs(self.dot_product(v)) < tolerance
 
 # test for parallel and orthogonal vectors
 # v and w are parallel if one is a scalar multiply of the other
@@ -173,16 +96,14 @@ my_vector11 = Vector([-7.579, -7.88])
 my_vector12 = Vector([22.737, 23.64])
 my_vector21 = Vector([-2.029, 9.97, 4.172])
 my_vector22 = Vector([-9.231, -6.639, -7.245])
-my_vector31 = Vector([-2.328, -7.284, -1.24])
+my_vector31 = Vector([-2.328, -7.284, -1.214])
 my_vector32 = Vector([-1.821, 1.072, -2.94])
 my_vector41 = Vector([2.118, 4.827])
 my_vector42 = Vector([0, 0])
 
 print my_vector11.parallelism(my_vector12)
-print my_vector11.angel_of_two_vectors(my_vector12)
-print math.pi
-print my_vector11.normalization().dot_product(my_vector12.normalization())
 print my_vector11.orthogonality(my_vector12)
+
 
 print my_vector21.parallelism(my_vector22)
 print my_vector21.orthogonality(my_vector22)
