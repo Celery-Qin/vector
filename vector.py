@@ -93,7 +93,7 @@ class Vector(object):
             ub = b.normalization()
             weight = self.dot_product(ub)
             return ub.scalar_multiply(weight)
-        except Exception as e: #when basis vector is 0
+        except Exception as e:  # when basis vector is 0
             if str(e) == self.CANNOT_NORMALIZE_ZERO_VECTOR_MSG:
                 raise Exception(self.NO_UNIQUE_PARALLEL_COMPONENT_MEG)
             else:
@@ -109,16 +109,32 @@ class Vector(object):
             else:
                 e
 
+    def cross_product(self, v):
+        new_coordinates = []
+        new_coordinates.append(self.coordinates[1] * v.coordinates[2] -
+                               v.coordinates[1] * self.coordinates[2])
+        new_coordinates.append(self.coordinates[2] * v.coordinates[0] -
+                               v.coordinates[2] * self.coordinates[0])
+        new_coordinates.append(self.coordinates[0] * v.coordinates[1] -
+                               v.coordinates[0] * self.coordinates[1])
+        return Vector(new_coordinates)
 
-v = Vector([3.039, 1.879])
-b = Vector([0.825, 2.036])
-print v.projection_vector(b)
+    def area_of_parallelogram(self, v):
+        return self.cross_product(v).magnitude()
 
-v = Vector([-9.88, -3.264, -8.159])
-b = Vector([-2.155, -9.353, -9.473])
-print v.orthogonal_vector(b)
+    def area_of_triangle(self, v):
+        return self.area_of_parallelogram(v) / Decimal(2.)
 
-v = Vector([3.009, -6.172, 3.692, -2.51])
-b = Vector([6.404, -9.144, 2.759, 8.718])
-print v.projection_vector(b)
-print v.orthogonal_vector(b)
+
+v = Vector([8.462, 7.893, -8.187])
+w = Vector([6.984, -5.975, 4.778])
+print v.cross_product(w)
+
+v = Vector([-8.987, -9.838, 5.031])
+w = Vector([-4.268, -1.861, -8.866])
+print v.area_of_parallelogram(w)
+
+v = Vector([1.5, 9.547, 3.691])
+w = Vector([-6.007, 0.124, 5.772])
+print v.area_of_triangle(w)
+
