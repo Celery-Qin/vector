@@ -9,6 +9,7 @@ getcontext().prec = 15
 class Vector(object):
 
     CANNOT_NORMALIZE_ZERO_VECTOR_MSG = 'Cannot normalize the zero vector'
+    NO_UNIQUE_PARALLEL_COMPONENT_MEG = 'No unique parallel component to the zero vector'
 
     def __init__(self, coordinates):
         try:
@@ -78,7 +79,6 @@ class Vector(object):
             else:
                 raise e
 
-# my own code
     def parallelism(self, v, tolerance=1e-10):
         return (self.magnitude() < tolerance or
                 v.magnitude() < tolerance or
@@ -88,28 +88,37 @@ class Vector(object):
     def orthogonality(self, v, tolerance=1e-10):
         return abs(self.dot_product(v)) < tolerance
 
-# test for parallel and orthogonal vectors
-# v and w are parallel if one is a scalar multiply of the other
-# v and w are orthogonal if their dot product is zero
-# 0:parallel and orthogonal to all vectors
-my_vector11 = Vector([-7.579, -7.88])
-my_vector12 = Vector([22.737, 23.64])
-my_vector21 = Vector([-2.029, 9.97, 4.172])
-my_vector22 = Vector([-9.231, -6.639, -7.245])
-my_vector31 = Vector([-2.328, -7.284, -1.214])
-my_vector32 = Vector([-1.821, 1.072, -2.94])
-my_vector41 = Vector([2.118, 4.827])
-my_vector42 = Vector([0, 0])
+    def projection_vector(self, b):
+        try:
+            ub = b.normalization()
+            weight = self.dot_product(ub)
+            return ub.scalar_multiply(weight)
+        except Exception as e: #when basis vector is 0
+            if str(e) == self.CANNOT_NORMALIZE_ZERO_VECTOR_MSG:
+                raise Exception(self.NO_UNIQUE_PARALLEL_COMPONENT_MEG)
+            else:
+                raise e
 
-print my_vector11.parallelism(my_vector12)
-print my_vector11.orthogonality(my_vector12)
+    def orthogonal_vector(self, b):
+        try:
+            projection = self.projection_vector(b)
+            return self.minus(projection)
+        except Exception as e:
+            if str(e) == self.NO_UNIQUE_PARALLEL_COMPONENT_MEG:
+                raise Exception(self.NO_UNIQUE_PARALLEL_COMPONENT_MEG)
+            else:
+                e
 
 
-print my_vector21.parallelism(my_vector22)
-print my_vector21.orthogonality(my_vector22)
+v = Vector([3.039, 1.879])
+b = Vector([0.825, 2.036])
+print v.projection_vector(b)
 
-print my_vector31.parallelism(my_vector32)
-print my_vector31.orthogonality(my_vector32)
+v = Vector([-9.88, -3.264, -8.159])
+b = Vector([-2.155, -9.353, -9.473])
+print v.orthogonal_vector(b)
 
-print my_vector41.parallelism(my_vector42)
-print my_vector41.orthogonality(my_vector42)
+v = Vector([3.009, -6.172, 3.692, -2.51])
+b = Vector([6.404, -9.144, 2.759, 8.718])
+print v.projection_vector(b)
+print v.orthogonal_vector(b)
