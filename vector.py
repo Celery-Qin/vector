@@ -110,14 +110,24 @@ class Vector(object):
                 e
 
     def cross_product(self, v):
-        new_coordinates = []
-        new_coordinates.append(self.coordinates[1] * v.coordinates[2] -
-                               v.coordinates[1] * self.coordinates[2])
-        new_coordinates.append(self.coordinates[2] * v.coordinates[0] -
-                               v.coordinates[2] * self.coordinates[0])
-        new_coordinates.append(self.coordinates[0] * v.coordinates[1] -
-                               v.coordinates[0] * self.coordinates[1])
-        return Vector(new_coordinates)
+        try:
+            x_1, y_1, z_1 = self.coordinates
+            x_2, y_2, z_2 = v.coordinates
+            new_coordinates = [y_1 * z_2 - y_2 * z_1,
+                               -(x_1 * z_2 - x_2 * z_1),
+                               x_1 * y_2 - x_2 * y_1]
+            return Vector(new_coordinates)
+        except ValueError as e:
+            msg = str(e)
+            if msg == 'need more than 2 values to unpack':
+                self_embedded_in_R3 = Vector(self.coordinates + ('0',))
+                v_embedded_in_R3 = Vector(v.coordinates + ('0',))
+                return self_embedded_in_R3.cross_product(v_embedded_in_R3)
+            elif (msg == 'too many values to unpack' or
+                  msg == 'need more than 1 value to unpack'):
+                raise Exception(self.ONLY_DEFINE_IN_TWO_THREE_DIMS_MSG)
+            else:
+                raise e
 
     def area_of_parallelogram(self, v):
         return self.cross_product(v).magnitude()
