@@ -33,8 +33,6 @@ class Vector(object):
     def plus(self, v):
         new_coordinates = [x + y for x,
                            y in zip(self.coordinates, v.coordinates)]
-        # print zip(self.coordinates, v.coordinates)
-        #[(8.218, -1.129), (-9.341, 2.111)]
         return Vector(new_coordinates)
 
     def minus(self, v):
@@ -136,15 +134,5 @@ class Vector(object):
         return self.area_of_parallelogram(v) / Decimal(2.)
 
 
-v = Vector([8.462, 7.893, -8.187])
-w = Vector([6.984, -5.975, 4.778])
-print v.cross_product(w)
 
-v = Vector([-8.987, -9.838, 5.031])
-w = Vector([-4.268, -1.861, -8.866])
-print v.area_of_parallelogram(w)
-
-v = Vector([1.5, 9.547, 3.691])
-w = Vector([-6.007, 0.124, 5.772])
-print v.area_of_triangle(w)
 
