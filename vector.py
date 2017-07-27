@@ -10,6 +10,7 @@ class Vector(object):
 
     CANNOT_NORMALIZE_ZERO_VECTOR_MSG = 'Cannot normalize the zero vector'
     NO_UNIQUE_PARALLEL_COMPONENT_MEG = 'No unique parallel component to the zero vector'
+    ONLY_DEFINE_IN_TWO_THREE_DIMS_MSG = 'only defined in 2 and 3 dimensions'
 
     def __init__(self, coordinates):
         try:
@@ -24,11 +25,31 @@ class Vector(object):
         except TypeError:
             raise TypeError('The coordinates must be an iterable')
 
+    def __iter__(self):
+        self.current = -1
+        return self
+
+    def next(self):
+        self.current += 1
+        if self.current >= self.dimension:
+            raise StopIteration
+        else:
+            return self.coordinates[self.current]
+
+    def __getitem__(self, key):
+        if key >= self.dimension:
+            raise IndexError
+        else:
+            return self.coordinates[key]
+
     def __str__(self):
         return 'Vector: {}'.format(self.coordinates)
 
-    def __eq__(self, v):
-        return self.coordinates == v.coordinates
+    def __eq__(self, v, tolerance=1e-10):
+        result = True
+        for i in range(self.dimension):
+            result = (result & (abs(self.coordinates[i]-v.coordinates[i]) < tolerance))
+        return result
 
     def plus(self, v):
         new_coordinates = [x + y for x,
@@ -132,7 +153,3 @@ class Vector(object):
 
     def area_of_triangle(self, v):
         return self.area_of_parallelogram(v) / Decimal(2.)
-
-
-
-
