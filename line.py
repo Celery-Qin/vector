@@ -4,7 +4,7 @@ from decimal import Decimal, getcontext
 
 from vector import Vector
 
-getcontext().prec = 30
+getcontext().prec = 16
 
 
 class Line(object):
@@ -96,13 +96,45 @@ class Line(object):
         return output
 
     def __eq__(self, ell):
-        if self.is_parallel_to(ell) and self.basepoint.__eq__(ell.basepoint):
-            return True
-        else:
+        # if self.is_parallel_to(ell) and self.basepoint.__eq__(ell.basepoint):
+        #     return True
+        # else:
+        #     return False
+        # if self.normal_vector.is_zero():
+        #     if not ell.normal_vector.is_zero():
+        #         return False
+        #     else:
+        #         diff = self.constant_term - ell.constant_term
+        #         return MyDecimal(diff).is_near_zero()
+        # elif ell.normal_vector.is_zero():
+        #     return False
+
+        if not self.is_parallel_to(ell):
             return False
+        x0 = self.basepoint
+        y0 = ell.basepoint
+        basepoint_difference = x0.minus(y0)
+        n = self.normal_vector
+        return basepoint_difference.orthogonality(n)
 
     def intersection_with(self, ell):
-        pass
+        """x=(Dk1-Bk2)/(AD-BC)
+           y=(Ak2-Ck1)/(AD-BC)
+           only 2 dimension"""
+        try:
+            a, b = self.normal_vector.coordinates
+            c, d = ell.normal_vector.coordinates
+            k1 = self.constant_term
+            k2 = ell.constant_term
+            x_numerator = d * k1 - b * k2
+            y_numerator = a * k2 - c * k1
+            one_over_denom = Decimal('1') / (a * d - b * c)
+            return Vector([x_numerator, y_numerator]).scalar_multiply(one_over_denom)
+        except ZeroDivisionError:
+            if self.__eq__(ell):
+                return self
+            else:
+                return None
 
     @staticmethod
     def first_nonzero_index(iterable):
@@ -126,6 +158,18 @@ class MyDecimal(Decimal):
 
 Line1 = Line(Vector([4.046, 2.836]), 1.21)
 Line2 = Line(Vector([10.115, 7.09]), 3.025)
+print 'Are they parallel?', Line1.is_parallel_to(Line2)
+print 'Are they equal?', Line1.__eq__(Line2)
+print 'the intersection is ', Line1.intersection_with(Line2)
+
+Line1 = Line(Vector([7.204, 3.182]), 8.68)
+Line2 = Line(Vector([8.172, 4.114]), 9.883)
+print 'Are they parallel?', Line1.is_parallel_to(Line2)
+print 'Are they equal?', Line1.__eq__(Line2)
+print 'the intersection is ', Line1.intersection_with(Line2)
+
+Line1 = Line(Vector([1.182, 5.562]), 6.744)
+Line2 = Line(Vector([1.773, 8.343]), 9.525)
 print 'Are they parallel?', Line1.is_parallel_to(Line2)
 print 'Are they equal?', Line1.__eq__(Line2)
 print 'the intersection is ', Line1.intersection_with(Line2)
