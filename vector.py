@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import pdb
 import math
 from decimal import Decimal, getcontext
 
@@ -16,8 +17,9 @@ class Vector(object):
         try:
             if not coordinates:
                 raise ValueError
-            self.coordinates = tuple([Decimal(x) for x in coordinates])
+            self.coordinates = list([Decimal(x) for x in coordinates])
             self.dimension = len(coordinates)
+            # self.idx = 0
 
         except ValueError:
             raise ValueError('The coordinates must be nonempty')
@@ -31,6 +33,7 @@ class Vector(object):
 
     def next(self):
         self.current += 1
+        # self.idx += 1
         if self.current >= self.dimension:
             raise StopIteration
         else:
@@ -48,7 +51,8 @@ class Vector(object):
     def __eq__(self, v, tolerance=1e-10):
         result = True
         for i in range(self.dimension):
-            result = (result & (abs(self.coordinates[i]-v.coordinates[i]) < tolerance))
+            result = (
+                result & (abs(self.coordinates[i] - v.coordinates[i]) < tolerance))
         return result
 
     def plus(self, v):
@@ -57,8 +61,7 @@ class Vector(object):
         return Vector(new_coordinates)
 
     def minus(self, v):
-        new_coordinates = [
-            x - y for (x, y) in zip(self.coordinates, v.coordinates)]
+        new_coordinates = [x - y for (x, y) in zip(self.coordinates, v.coordinates)]
         return Vector(new_coordinates)
 
     def scalar_multiply(self, c):
@@ -84,8 +87,8 @@ class Vector(object):
         try:
             u1 = self.normalization()  # unit vector
             u2 = v.normalization()
-            angel_in_radians = math.acos(u1.dot_product(u2))
-
+            angel_in_radians = math.acos(round(u1.dot_product(u2),5))
+            # 注意这里dot的结果可能大于1或小于-1，需要四舍五入
             if in_degrees:
                 degrees_per_radian = 180. / math.pi
                 return angel_in_radians * degrees_per_radian

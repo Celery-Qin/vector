@@ -13,7 +13,7 @@ class Plane(object):
         self.dimension = 3
 
         if not normal_vector:
-            all_zeros = ['0']*self.dimension
+            all_zeros = ['0'] * self.dimension
             normal_vector = Vector(all_zeros)
         self.normal_vector = normal_vector
 
@@ -23,28 +23,25 @@ class Plane(object):
 
         self.set_basepoint()
 
-
     def set_basepoint(self):
         try:
             n = self.normal_vector
             c = self.constant_term
-            basepoint_coords = ['0']*self.dimension
+            basepoint_coords = ['0'] * self.dimension
 
             initial_index = Plane.first_nonzero_index(n)
             initial_coefficient = n[initial_index]
 
-            basepoint_coords[initial_index] = c/initial_coefficient
+            basepoint_coords[initial_index] = c / initial_coefficient
             self.basepoint = Vector(basepoint_coords)
 
         except Exception as e:
             if str(e) == Plane.NO_NONZERO_ELTS_FOUND_MSG:
-                self.basepoint = None
+                self.basepoint = None ##
             else:
                 raise e
 
-
     def __str__(self):
-
         num_decimal_places = 3
 
         def write_coefficient(coefficient, is_initial_term=False):
@@ -88,7 +85,6 @@ class Plane(object):
 
         return output
 
-
     @staticmethod
     def first_nonzero_index(iterable):
         for k, item in enumerate(iterable):
@@ -96,7 +92,58 @@ class Plane(object):
                 return k
         raise Exception(Plane.NO_NONZERO_ELTS_FOUND_MSG)
 
+    def is_parallel_to(self, elp):
+        n1 = self.normal_vector
+        n2 = elp.normal_vector
+        return n1.parallelism(n2)
+
+    def __eq__(self, elp):
+        if self.normal_vector.is_zero():
+            if not elp.normal_vector.is_zero():
+                return False
+            else:
+                diff = self.constant_term - elp.constant_term
+                return MyDecimal(diff).is_near_zero()
+        elif elp.normal_vector.is_zero():
+            return False
+        if not self.is_parallel_to(elp):
+            return False
+
+        x0 = self.basepoint
+        y0 = elp.basepoint
+        basepoint_difference = x0.minus(y0)
+
+        n = self.normal_vector
+        return basepoint_difference.orthogonality(n)
+
 
 class MyDecimal(Decimal):
+
     def is_near_zero(self, eps=1e-10):
         return abs(self) < eps
+
+# Q1:Determine whether two planes are parallel
+# normal vectors are parallel
+# Q2:Determine whether two planes are equal
+# the vector connecting one point on each plane is orthogonal to the
+# planes' normal vectors
+# plane1 = Plane(Vector([-0.412, 3.806, 0.728]), -3.46)
+# plane2 = Plane(Vector([1.03, -9.515, -1.82]), 8.65)
+# print "Are they parallel?", plane1.is_parallel_to(plane2)
+# print "Are they equal?", plane1.__eq__(plane2)
+
+# plane1 = Plane(Vector([2.611, 5.528, 0.283]), 4.6)
+# plane2 = Plane(Vector([7.715, 8.306, 5.342]), 3.76)
+# print "Are they parallel?", plane1.is_parallel_to(plane2)
+# print "Are they equal?", plane1.__eq__(plane2)
+
+# plane1 = Plane(Vector([-7.926, 8.625, -7.212]), -7.952)
+# plane2 = Plane(Vector([-2.642, 2.875, -2.404]), -2.443)
+# print "Are they parallel?", plane1.is_parallel_to(plane2)
+# print "Are they equal?", plane1.__eq__(plane2)
+# Intersections of planes in 3D
+# cross product of two planes' normal vectors
+# 1.the planes are not parallel
+# 2.get the cross product
+# 3.if planes are parallel but not equal
+# 4.if planes are equal
