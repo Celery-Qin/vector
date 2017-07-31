@@ -156,3 +156,13 @@ class Vector(object):
 
     def area_of_triangle(self, v):
         return self.area_of_parallelogram(v) / Decimal(2.)
+
+    def is_zero(self, tolerance=1e-10):
+        result = True
+        for x in self.coordinates:
+            if abs(x) < tolerance:
+                result &= True
+            else:
+                result &= False
+                break
+        return result
