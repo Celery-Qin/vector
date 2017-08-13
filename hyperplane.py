@@ -5,16 +5,21 @@ from vector import Vector
 getcontext().prec = 30
 
 
-class Plane(object):
+class Hyperplane(object):
 
     NO_NONZERO_ELTS_FOUND_MSG = 'No nonzero elements found'
+    EITHER_DIM_OR_NORMAL_VEC_MUST_BE_PROVIDED_MSG = 'Either the dimension or normal vector must be provided'
 
-    def __init__(self, normal_vector=None, constant_term=None):
-        self.dimension = 3
-
-        if not normal_vector:
+    def __init__(self, dimension=None, normal_vector=None, constant_term=None):
+        # self.dimension = 3
+        if not dimension and not normal_vector:
+            raise Exception(self.EITHER_DIM_OR_NORMAL_VEC_MUST_BE_PROVIDED_MSG)
+        elif not normal_vector:
+            self.dimension = dimension
             all_zeros = ['0'] * self.dimension
             normal_vector = Vector(all_zeros)
+        else:
+            self.dimension = normal_vector.dimension
         self.normal_vector = normal_vector
 
         if not constant_term:
@@ -29,15 +34,15 @@ class Plane(object):
             c = self.constant_term
             basepoint_coords = ['0'] * self.dimension
 
-            initial_index = Plane.first_nonzero_index(n)
+            initial_index = Hyperplane.first_nonzero_index(n)
             initial_coefficient = n[initial_index]
 
             basepoint_coords[initial_index] = c / initial_coefficient
             self.basepoint = Vector(basepoint_coords)
 
         except Exception as e:
-            if str(e) == Plane.NO_NONZERO_ELTS_FOUND_MSG:
-                self.basepoint = None ##
+            if str(e) == Hyperplane.NO_NONZERO_ELTS_FOUND_MSG:
+                self.basepoint = None
             else:
                 raise e
 
@@ -67,8 +72,8 @@ class Plane(object):
         n = self.normal_vector
 
         try:
-            initial_index = Plane.first_nonzero_index(n)
-            terms = [write_coefficient(n[i], is_initial_term=(i==initial_index)) + 'x_{}'.format(i+1)
+            initial_index = Hyperplane.first_nonzero_index(n)
+            terms = [write_coefficient(n[i], is_initial_term=(i == initial_index)) + 'x_{}'.format(i + 1)
                      for i in range(self.dimension) if round(n[i], num_decimal_places) != 0]
             output = ' '.join(terms)
 
@@ -90,7 +95,7 @@ class Plane(object):
         for k, item in enumerate(iterable):
             if not MyDecimal(item).is_near_zero():
                 return k
-        raise Exception(Plane.NO_NONZERO_ELTS_FOUND_MSG)
+        raise Exception(Hyperplane.NO_NONZERO_ELTS_FOUND_MSG)
 
     def is_parallel_to(self, elp):
         n1 = self.normal_vector

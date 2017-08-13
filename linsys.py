@@ -5,6 +5,7 @@ from decimal import Decimal, getcontext
 from vector import Vector
 from plane import Plane
 from copy import deepcopy
+from hyperplane import Hyperplane
 
 getcontext().prec = 30
 
@@ -39,7 +40,7 @@ class LinearSystem(object):
 
         new_normal_vector = n.scalar_multiply(coefficient)
         new_constant_term = k * coefficient
-        self[row] = Plane(new_normal_vector, new_constant_term)
+        self[row] = Hyperplane(normal_vector=new_normal_vector,constant_term=new_constant_term)
 
     def add_multiple_times_row_to_row(self, coefficient, row_to_add, row_to_be_added_to):
         """将row_to_add乘以coefficient后，加到row_to_be_added_to上"""
@@ -50,8 +51,9 @@ class LinearSystem(object):
 
         new_normal_vector = n1.scalar_multiply(coefficient).plus(n2)
         new_constant_term = (k1 * coefficient) + k2
-
-        self[row_to_be_added_to] = Plane(new_normal_vector, new_constant_term)
+        self[row_to_be_added_to] = Hyperplane(dimension=None,
+                                              normal_vector=new_normal_vector,
+                                              constant_term=new_constant_term)
 
     def indices_of_first_nonzero_terms_in_each_row(self):
         """求每行首个不为零系数项的index"""
@@ -78,7 +80,7 @@ class LinearSystem(object):
         return self.planes[i]
 
     def __setitem__(self, i, x):
-        """把self中第i个平面换成x"""
+        """把self中第i个多维面换成x"""
         try:
             assert x.dimension == self.dimension
             self.planes[i] = x
@@ -98,7 +100,7 @@ class LinearSystem(object):
            1、只能与最接近的row交换顺序
            2、不要只将row与数相乘
            3、只将几倍的row与下面的row相加
-           A*x_1 + B*x_2 + C*x_3 = k_1 
+           A*x_1 + B*x_2 + C*x_3 = k_1
            D*x_1 + E*x_2 + F*x_3 = k_2
            G*x_1 + H*x_2 + I*x_3 = k_3
         """
@@ -295,42 +297,30 @@ class Parametrization(object):
 
         def write_coefficient(coefficient, is_initial_term=False):
             coefficient = round(coefficient, num_decimal_places)
-            if coefficient % 1 == 0:
-                coefficient = int(coefficient)
 
             output = ''
 
             if coefficient < 0:
-                output += '-'
-            if coefficient > 0 and not is_initial_term:
-                output += '+'
+                output += '- '
+            if coefficient >= 0 and not is_initial_term:
+                output += '+ '
 
-            if not is_initial_term:
-                output += ' '
-
-            if abs(coefficient) != 1:
-                output += '{}'.format(abs(coefficient))
+            output += '{}'.format(abs(coefficient))
 
             return output
 
-        n = self.normal_vector
+        d = self.direction_vectors  # 含多个向量的数组
+        b = self.basepoint
+        output = ''
 
-        try:
-            initial_index = Plane.first_nonzero_index(n)
-            terms = [write_coefficient(n[i], is_initial_term=(i==initial_index)) + 'x_{}'.format(i+1)
-                     for i in range(self.dimension) if round(n[i], num_decimal_places) != 0]
-            output = ' '.join(terms)
-
-        except Exception as e:
-            if str(e) == self.NO_NONZERO_ELTS_FOUND_MSG:
-                output = '0'
-            else:
-                raise e
-
-        constant = round(self.constant_term, num_decimal_places)
-        if constant % 1 == 0:
-            constant = int(constant)
-        output += ' = {}'.format(constant)
+        for i in range(b.dimension):
+            output += 'x_{} = {}'.format(
+                i + 1,
+                write_coefficient(b[i], is_initial_term=True))
+            for j in range(len(d)):
+                output += ' {} t_{}'.format(write_coefficient(
+                    d[j][i], is_initial_term=False), j + 1)
+            output += '\n'
 
         return output
 
@@ -482,7 +472,6 @@ class MyDecimal(Decimal):
 #         r[2] == Plane(normal_vector=Vector(['0', '0', '1']), constant_term=Decimal('2') / Decimal('9'))):
 #     print 'test case 4 failed'
 
-
 # 编写高斯消去法求解函数
 # p1 = Plane(normal_vector=Vector([5.862, 1.178, -10.366]), constant_term=-8.15)
 # p2 = Plane(normal_vector=Vector([-2.931, -0.589, 5.183]), constant_term=-4.075)
@@ -507,19 +496,31 @@ class MyDecimal(Decimal):
 # print t
 
 # 编写参数化函数
-p0 = Plane(normal_vector=Vector([0.786, 0.786, 0.588]), constant_term=-0.714)
-p1 = Plane(normal_vector=Vector([-0.138, -0.138, 0.244]), constant_term=0.319)
+
+p0 = Hyperplane(normal_vector=Vector(
+    ['0.786', '0.786']), constant_term='-0.714')
+p1 = Hyperplane(normal_vector=Vector(
+    ['-0.131', '-0.131']), constant_term='0.319')
 s = LinearSystem([p0, p1])
+# pdb.set_trace()
 print 'System 1 solution:\n{}'.format(s.compute_parametrize_solution())
 
-p0 = Plane(normal_vector=Vector([8.631, 5.112, -1.816]), constant_term=-5.113)
-p1 = Plane(normal_vector=Vector([4.315, 11.132, -5.27]), constant_term=-6.775)
-p2 = Plane(normal_vector=Vector([-2.158, 3.01, -1.727]), constant_term=-0.831)
+p0 = Hyperplane(normal_vector=Vector(
+    [8.631, 5.112, -1.816]), constant_term=-5.113)
+p1 = Hyperplane(normal_vector=Vector(
+    [4.315, 11.132, -5.27]), constant_term=-6.775)
+p2 = Hyperplane(normal_vector=Vector([-2.158, 3.01, -1.727]),
+                constant_term=-0.831)
+s = LinearSystem([p0, p1, p2])
+print 'System 2 solution:\n{}'.format(s.compute_parametrize_solution())
 
-p0 = Plane(normal_vector=Vector([0.935, 1.76, -9.365]), constant_term=-9.955)
-p1 = Plane(normal_vector=Vector([0.187, 0.352, -1.873]), constant_term=-1.991)
-p2 = Plane(normal_vector=Vector([0.374, 0.704, -3.746]), constant_term=-3.982)
-p3 = Plane(normal_vector=Vector([-0.561, -1.056, 5.619]), constant_term=5.973)
-
-
-s = LinearSystem([p0, p1, p2, p3])
+p0 = Hyperplane(normal_vector=Vector(
+    [0.935, 1.76, -9.365, 1.111, -8.363]), constant_term=-9.955)
+p1 = Hyperplane(normal_vector=Vector(
+    [0.187, 0.352, -1.873, -2.813, 1.19]), constant_term=-1.991)
+p2 = Hyperplane(normal_vector=Vector(
+    [0.374, 0.704, -3.746, 2.013, -2.802]), constant_term=-3.982)
+# p3 = Hyperplane(normal_vector=Vector([-0.561, -1.056, 5.619]),
+#            constant_term=5.973)
+s = LinearSystem([p0, p1, p2])
+print 'System 3 solution:\n{}'.format(s.compute_parametrize_solution())
